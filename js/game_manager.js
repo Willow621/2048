@@ -12,6 +12,17 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.setup();
 }
+//Changes I made:
+
+//added merge sound "bubble" --- AM
+//added start sound "score" 
+//added lose sound "lose" 
+//added win sound "win" 
+
+//Milestone Achievements 
+//Sound plays and Medals appear once tile merge to totals 128, 256, 512, and 1024.
+
+
 
 // Restart the game
 GameManager.prototype.restart = function () {
@@ -33,8 +44,9 @@ GameManager.prototype.isGameTerminated = function () {
 
 // Set up the game
 GameManager.prototype.setup = function () {
-  var previousState = this.storageManager.getGameState();
-
+  var previousState = this.storageManager.getGameState(); //added start sound "score" --- AM
+    var audio = new Audio('score.wav');
+    audio.play();
   // Reload the game from a previous game if present
   if (previousState) {
     this.grid        = new Grid(previousState.grid.size,
@@ -82,7 +94,8 @@ GameManager.prototype.actuate = function () {
   }
 
   // Clear the state when the game is over (game over only, not win)
-  if (this.over) {
+    if (this.over) {
+        
     this.storageManager.clearGameState();
   } else {
     this.storageManager.setGameState(this.serialize());
@@ -148,26 +161,58 @@ GameManager.prototype.move = function (direction) {
       cell = { x: x, y: y };
       tile = self.grid.cellContent(cell);
 
-      if (tile) {
-        var positions = self.findFarthestPosition(cell, vector);
-        var next      = self.grid.cellContent(positions.next);
+        if (tile) {
+            var positions = self.findFarthestPosition(cell, vector);
+            var next = self.grid.cellContent(positions.next);
 
-        // Only one merger per row traversal?
-        if (next && next.value === tile.value && !next.mergedFrom) {
-          var merged = new Tile(positions.next, tile.value * 2);
-          merged.mergedFrom = [tile, next];
+            // Only one merger per row traversal?
+            if (next && next.value === tile.value && !next.mergedFrom) {
+                var merged = new Tile(positions.next, tile.value * 2);
+                merged.mergedFrom = [tile, next];
 
-          self.grid.insertTile(merged);
-          self.grid.removeTile(tile);
+                self.grid.insertTile(merged);
+                self.grid.removeTile(tile);
 
-          // Converge the two tiles' positions
-          tile.updatePosition(positions.next);
+                // Converge the two tiles' positions
+                tile.updatePosition(positions.next);
 
-          // Update the score
-          self.score += merged.value;
+                // Update the score
+                self.score += merged.value;
+                var audio = new Audio('bubble.wav'); //added score sound "bubble" --- AM
+                audio.play();
+
+                //Milestone Achievments -- AM
+
+                //128
+                if (merged.value === 128) {
+                    document.getElementById("bronzemedal").style.visibility = "visible";
+                    var audio = new Audio('win.wav'); //added medal sound "win"
+                    audio.play();
+                }
+                //256
+                if (merged.value === 256) {
+                    document.getElementById("silvermedal").style.visibility = "visible";
+                    var audio = new Audio('win.wav'); //added medal sound "win"
+                    audio.play();
+                }
+                //512
+                if (merged.value === 512) {
+                    document.getElementById("goldmedal").style.visibility = "visible";
+                    var audio = new Audio('win.wav'); //added medal sound "win"
+                    audio.play();
+                }
+                //1024
+                if (merged.value === 1024) {
+                    document.getElementById("purplemedal").style.visibility = "visible";
+                    var audio = new Audio('win.wav'); //added medal sound "win"
+                    audio.play();
+                }
 
           // The mighty 2048 tile
-          if (merged.value === 2048) self.won = true;
+            if (merged.value === 2048) 
+                self.won = true;
+                
+           
         } else {
           self.moveTile(tile, positions.farthest);
         }
@@ -182,8 +227,11 @@ GameManager.prototype.move = function (direction) {
   if (moved) {
     this.addRandomTile();
 
-    if (!this.movesAvailable()) {
-      this.over = true; // Game over!
+      if (!this.movesAvailable()) {
+          var audio = new Audio('lose.mp3'); //added lose sound "lose" --- AM
+          audio.play();
+        this.over = true; // Game over!
+        
     }
 
     this.actuate();
